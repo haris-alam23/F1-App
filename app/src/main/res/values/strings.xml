@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">F1Telemetry</string>
+    <string name="title_activity_telemetry">TelemetryActivity</string>
 </resources>
