@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "440353767504",
+    "project_id": "f1telemetry-72944",
+    "storage_bucket": "f1telemetry-72944.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:440353767504:android:105bddb948772f03d95155",
+        "android_client_info": {
+          "package_name": "com.example.f1telemetry"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4aR48Ra5t_DJxlDgh8WQuJtp5wieXv_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
