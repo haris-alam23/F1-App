@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">F1Telemetry</string>
     <string name="title_activity_telemetry">TelemetryActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_home_screen">HomeScreenActivity</string>
 </resources>
