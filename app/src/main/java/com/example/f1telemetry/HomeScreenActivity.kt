@@ -1,5 +1,6 @@
 package com.example.f1telemetry
 
+import android.R
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,9 +10,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.f1telemetry.ui.theme.F1TelemetryTheme
@@ -55,6 +61,14 @@ class HomeScreenActivity : ComponentActivity() {
         var firstName by remember { mutableStateOf("Guest") }
 
 
+
+        LaunchedEffect(true) {
+            database.get().addOnSuccessListener { snapshot ->
+                val first = snapshot.child("firstName").value.toString()
+                firstName = first
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,14 +76,50 @@ class HomeScreenActivity : ComponentActivity() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LaunchedEffect(true) {
-                database.get().addOnSuccessListener { snapshot ->
-                    val first = snapshot.child("firstName").value.toString()
-                    firstName = first
-                }
+
+
+            Text("Welcome, $firstName",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text("Your Personalized F1 Analytics Hub",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            FeatureCard("Telemetry", "View real-time telemetry data") {
+
             }
 
-            Text("Welcome, $firstName")
+            Spacer(Modifier.height(16.dp))
+
+            FeatureCard(
+                title = "Driver Comparison",
+                description = "Compare two drivers side-by-side"
+            ) {
+                // TODO: Replace with DriverComparisonActivity
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            FeatureCard(
+                title = "Race Sessions",
+                description = "Browse races, practice, quali, and race data"
+            ) {
+                // TODO: Replace with RaceSessionsActivity
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            FeatureCard(
+                title = "Settings",
+                description = "Manage your account and preferences"
+            ) {
+
+            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -86,4 +136,33 @@ class HomeScreenActivity : ComponentActivity() {
 
 
     }
-}
+
+    @Composable
+    fun FeatureCard(title: String, description: String, onClick: () -> Unit) {
+        ElevatedCard(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+
+            }
+        }
+    }
