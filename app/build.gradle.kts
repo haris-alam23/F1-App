@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.material3)
+    implementation(libs.androidx.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -63,5 +65,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
 }
 apply(plugin = "com.google.gms.google-services")

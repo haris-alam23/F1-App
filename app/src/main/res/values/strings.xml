@@ -5,4 +5,5 @@
     <string name="title_activity_sign_up">SignUpActivity</string>
     <string name="title_activity_home_screen">HomeScreenActivity</string>
     <string name="title_activity_driver_comparison">DriverComparisonActivity</string>
+    <string name="title_activity_results">ResultsActivity</string>
 </resources>
