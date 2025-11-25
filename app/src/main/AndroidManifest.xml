@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.F1Telemetry">
         <activity
+            android:name=".DriverComparisonActivity"
+            android:exported="false"
+            android:label="@string/title_activity_driver_comparison"
+            android:theme="@style/Theme.F1Telemetry" />
+        <activity
             android:name=".HomeScreenActivity"
             android:exported="false"
             android:label="@string/title_activity_home_screen"

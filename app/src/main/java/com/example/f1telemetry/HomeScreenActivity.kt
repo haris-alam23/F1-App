@@ -91,6 +91,7 @@ class HomeScreenActivity : ComponentActivity() {
             Spacer(Modifier.height(16.dp))
 
             FeatureCard("Telemetry", "View real-time telemetry data") {
+                startActivity(Intent(this@HomeScreenActivity, TelemetryActivity::class.java))
 
             }
 
@@ -100,7 +101,8 @@ class HomeScreenActivity : ComponentActivity() {
                 title = "Driver Comparison",
                 description = "Compare two drivers side-by-side"
             ) {
-                // TODO: Replace with DriverComparisonActivity
+                startActivity(Intent(this@HomeScreenActivity, DriverComparisonActivity::class.java))
+
             }
 
             Spacer(Modifier.height(16.dp))
@@ -109,7 +111,6 @@ class HomeScreenActivity : ComponentActivity() {
                 title = "Race Sessions",
                 description = "Browse races, practice, quali, and race data"
             ) {
-                // TODO: Replace with RaceSessionsActivity
             }
 
             Spacer(Modifier.height(16.dp))

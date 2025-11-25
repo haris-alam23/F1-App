@@ -4,19 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.f1telemetry.ui.theme.F1TelemetryTheme
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.net.URL
 
@@ -30,225 +34,530 @@ class TelemetryActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelemetryScreen() {
-    var selectedDriver by remember { mutableStateOf("Verstappen") }
-    var selectedMetric by remember { mutableStateOf("Speed") }
-    var lapData by remember { mutableStateOf<List<Pair<Int, Double>>>(emptyList()) }
+    var selectedYear by remember { mutableStateOf(2025) }
+
+
+    val metricOptions = listOf(
+        "Speed (km/h)" to "speed",
+        "Throttle (%)" to "throttle",
+        "Brake" to "brake",
+        "RPM" to "rpm",
+        "Gear" to "n_gear",
+        "DRS State" to "drs"
+    )
+    var selectedMetric by remember { mutableStateOf(metricOptions[0]) }
+
+    var selectedMeeting by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var selectedSession by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var selectedDriver by remember { mutableStateOf<Pair<Int, String>?>(null) }
+
+    var carData by remember { mutableStateOf<List<Entry>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val drivers = mapOf(
-        "Verstappen" to 1,
-        "Leclerc" to 16,
-        "Norris" to 4,
-        "Hamilton" to 44,
-        "Alonso" to 14
-    )
-
-    val metrics = listOf("Speed", "Throttle", "Brake", "RPM", "Gear")
-
-    fun loadTelemetry() {
-        fetchTelemetryData(
-            driverNum = drivers[selectedDriver] ?: 1,
-            sessionKey = 9158,
-            metric = selectedMetric.lowercase(),
-            onResult = { data ->
-                lapData = data
-                isLoading = false
-                errorMessage = null
-            },
-            onError = { err ->
-                isLoading = false
-                errorMessage = err
-            }
-        )
-    }
-
-    LaunchedEffect(Unit) { loadTelemetry() }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TopAppBar(title = { Text("OpenF1 Telemetry Dashboard") })
-        Spacer(modifier = Modifier.height(16.dp))
 
-        var expandedDriver by remember { mutableStateOf(false) }
-        Box {
-            Button(onClick = { expandedDriver = true }) {
-                Text("Driver: $selectedDriver")
-            }
-            DropdownMenu(
-                expanded = expandedDriver,
-                onDismissRequest = { expandedDriver = false }
-            ) {
-                drivers.keys.forEach { name ->
-                    DropdownMenuItem(
-                        text = { Text(name) },
-                        onClick = {
-                            selectedDriver = name
-                            expandedDriver = false
-                            isLoading = true
-                            loadTelemetry()
+        Text(
+            "Telemetry Dashboard",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+
+        SettingCard {
+            Text(
+                "Year",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            YearDropdown(
+                selectedYear = selectedYear,
+                onSelected = { year ->
+                    selectedYear = year
+                    selectedMeeting = null
+                    selectedSession = null
+                    selectedDriver = null
+                    carData = emptyList()
+                    errorMessage = null
+                }
+            )
+        }
+
+
+        SettingCard {
+            Text(
+                "Race",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            MeetingDropdown(
+                year = selectedYear,
+                selected = selectedMeeting,
+                onSelected = {
+                    selectedMeeting = it
+                    selectedSession = null
+                    selectedDriver = null
+                    carData = emptyList()
+                    errorMessage = null
+                }
+            )
+        }
+
+        SettingCard {
+            Text(
+                "Session",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            SessionDropdown(
+                meetingKey = selectedMeeting?.first,
+                selected = selectedSession,
+                onSelected = { session ->
+                    selectedSession = session
+                    selectedDriver = null
+                    carData = emptyList()
+                    errorMessage = null
+                }
+            )
+        }
+
+        SettingCard {
+            Text(
+                "Driver",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            DriverDropdown(
+                sessionKey = selectedSession?.first,
+                selected = selectedDriver,
+                onSelected = { driver ->
+                    selectedDriver = driver
+                    carData = emptyList()
+                    errorMessage = null
+                }
+            )
+        }
+
+        SettingCard {
+            Text(
+                "Metric",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            MetricDropdown(
+                options = metricOptions,
+                selected = selectedMetric,
+                onSelected = { metric ->
+                    selectedMetric = metric
+                    carData = emptyList()
+                    errorMessage = null
+                }
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            onClick = {
+                errorMessage = null
+
+                if (selectedMeeting == null || selectedSession == null || selectedDriver == null) {
+                    errorMessage = "Please select a year, race, session, and driver."
+                    return@Button
+                }
+
+                val driverNumber = selectedDriver!!.first
+                val sessionKey = selectedSession!!.first
+                val metricField = selectedMetric.second
+
+                isLoading = true
+                scope.launch {
+                    try {
+                        carData = fetchCarData(driverNumber, sessionKey, metricField)
+                        if (carData.isEmpty()) {
+                            errorMessage =
+                                "No telemetry available for this session/metric. Try Practice/Qualifying or another metric."
                         }
-                    )
+                    } catch (e: Exception) {
+                        errorMessage = "Error: ${e.message}"
+                    } finally {
+                        isLoading = false
+                    }
                 }
             }
+        ) {
+            Text("Load Telemetry")
         }
 
         Spacer(Modifier.height(12.dp))
 
-        var expandedMetric by remember { mutableStateOf(false) }
-        Box {
-            Button(onClick = { expandedMetric = true }) {
-                Text("Metric: $selectedMetric")
-            }
-            DropdownMenu(
-                expanded = expandedMetric,
-                onDismissRequest = { expandedMetric = false }
-            ) {
-                metrics.forEach { metric ->
-                    DropdownMenuItem(
-                        text = { Text(metric) },
-                        onClick = {
-                            selectedMetric = metric
-                            expandedMetric = false
-                            isLoading = true
-                            loadTelemetry()
-                        }
-                    )
-                }
-            }
+        if (isLoading) {
+            CircularProgressIndicator()
         }
 
-        Spacer(Modifier.height(24.dp))
+        errorMessage?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
 
-        when {
-            isLoading -> CircularProgressIndicator()
-            errorMessage != null -> Text(errorMessage ?: "")
-            lapData.isNotEmpty() -> LapChart(lapData, selectedMetric)
+        if (carData.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        selectedMetric.first,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    TelemetryChart(carData, selectedMetric.first)
+                }
+            }
         }
     }
 }
 
-fun fetchTelemetryData(
-    driverNum: Int,
-    sessionKey: Int,
-    metric: String,
-    onResult: (List<Pair<Int, Double>>) -> Unit,
-    onError: (String) -> Unit
+
+@Composable
+fun SettingCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = content
+        )
+    }
+}
+
+
+@Composable
+fun YearDropdown(
+    selectedYear: Int,
+    onSelected: (Int) -> Unit
 ) {
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val apiUrl = "https://api.openf1.org/v1/car_data?session_key=$sessionKey&driver_number=$driverNum"
-            val response = URL(apiUrl).readText()
-            val jsonArray = JSONArray(response)
-            val data = mutableListOf<Pair<Int, Double>>()
+    val years = listOf(2025,2024, 2023, 2022, 2021)
+    var expanded by remember { mutableStateOf(false) }
 
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-                if (!obj.isNull(metric)) {
-                    val rawValue = obj.getDouble(metric)
-                    val valid = when (metric) {
-                        "speed" -> rawValue in 0.0..400.0
-                        "rpm" -> rawValue in 0.0..13000.0
-                        "throttle", "brake" -> rawValue in 0.0..100.0
-                        "n_gear" -> rawValue in 0.0..9.0
-                        else -> true
-                    }
-                    if (valid) data.add(Pair(i, rawValue))
+    OutlinedButton(
+        onClick = { expanded = true },
+        modifier = Modifier.width(260.dp)
+    ) {
+        Text(selectedYear.toString())
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.width(260.dp)
+    ) {
+        years.forEach { year ->
+            DropdownMenuItem(
+                text = { Text(year.toString()) },
+                onClick = {
+                    onSelected(year)
+                    expanded = false
                 }
-            }
-
-            if (data.isEmpty()) {
-                withContext(Dispatchers.Main) {
-                    onError("No valid $metric data available.")
-                }
-                return@launch
-            }
-
-            val lapAverages = data.groupBy { it.first / 400 }
-                .map { (lap, values) -> Pair(lap + 1, values.map { it.second }.average()) }
-
-            withContext(Dispatchers.Main) { onResult(lapAverages) }
-
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) { onError("Error fetching $metric: ${e.localizedMessage}") }
+            )
         }
     }
 }
 
 @Composable
-fun LapChart(laps: List<Pair<Int, Double>>, metricLabel: String) {
-    val fullLabel = when (metricLabel.lowercase()) {
-        "speed" -> "Speed (km/h)"
-        "rpm" -> "Engine RPM"
-        "throttle" -> "Throttle (%)"
-        "brake" -> "Brake (%)"
-        "gear" -> "Gear"
-        else -> metricLabel
+fun MeetingDropdown(
+    year: Int,
+    selected: Pair<Int, String>?,
+    onSelected: (Pair<Int, String>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var meetings by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
+
+    LaunchedEffect(year) {
+        meetings = fetchMeetings(year)
     }
 
-    Column(
+    OutlinedButton(
+        onClick = { expanded = true },
+        modifier = Modifier.width(260.dp)
+    ) {
+        Text(selected?.second ?: "Select Race")
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.width(260.dp)
+    ) {
+        if (meetings.isEmpty()) {
+            DropdownMenuItem(text = { Text("Loading...") }, onClick = {})
+        } else {
+            meetings.forEach { meeting ->
+                DropdownMenuItem(
+                    text = { Text(meeting.second) },
+                    onClick = {
+                        onSelected(meeting)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SessionDropdown(
+    meetingKey: Int?,
+    selected: Pair<Int, String>?,
+    onSelected: (Pair<Int, String>) -> Unit
+) {
+    if (meetingKey == null) {
+        Text("Select a race first")
+        return
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+    var sessions by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
+
+    LaunchedEffect(meetingKey) {
+        sessions = fetchSessions(meetingKey)
+    }
+
+    OutlinedButton(
+        onClick = { expanded = true },
+        modifier = Modifier.width(260.dp)
+    ) {
+        Text(selected?.second ?: "Select Session")
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.width(260.dp)
+    ) {
+        if (sessions.isEmpty()) {
+            DropdownMenuItem(text = { Text("Loading sessions...") }, onClick = {})
+        } else {
+            sessions.forEach { session ->
+                DropdownMenuItem(
+                    text = { Text(session.second) },
+                    onClick = {
+                        onSelected(session)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DriverDropdown(
+    sessionKey: Int?,
+    selected: Pair<Int, String>?,
+    onSelected: (Pair<Int, String>) -> Unit
+) {
+    if (sessionKey == null) {
+        Text("Select a session first")
+        return
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+    var drivers by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
+
+    LaunchedEffect(sessionKey) {
+        drivers = fetchDrivers(sessionKey)
+    }
+
+    OutlinedButton(
+        onClick = { expanded = true },
+        modifier = Modifier.width(260.dp)
+    ) {
+        Text(selected?.second ?: "Select Driver")
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.width(260.dp)
+    ) {
+        if (drivers.isEmpty()) {
+            DropdownMenuItem(text = { Text("Loading drivers...") }, onClick = {})
+        } else {
+            drivers.forEach { driver ->
+                DropdownMenuItem(
+                    text = { Text("${driver.first} - ${driver.second}") },
+                    onClick = {
+                        onSelected(driver)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MetricDropdown(
+    options: List<Pair<String, String>>,
+    selected: Pair<String, String>,
+    onSelected: (Pair<String, String>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    OutlinedButton(
+        onClick = { expanded = true },
+        modifier = Modifier.width(260.dp)
+    ) {
+        Text(selected.first)
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.width(260.dp)
+    ) {
+        options.forEach { option ->
+            DropdownMenuItem(
+                text = { Text(option.first) },
+                onClick = {
+                    onSelected(option)
+                    expanded = false
+                }
+            )
+        }
+    }
+}
+
+
+suspend fun fetchMeetings(year: Int): List<Pair<Int, String>> =
+    withContext(Dispatchers.IO) {
+        try {
+            val json = URL("https://api.openf1.org/v1/meetings?year=$year").readText()
+            val array = JSONArray(json)
+
+            (0 until array.length()).map {
+                val obj = array.getJSONObject(it)
+                obj.getInt("meeting_key") to obj.getString("meeting_name")
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+suspend fun fetchSessions(meetingKey: Int): List<Pair<Int, String>> =
+    withContext(Dispatchers.IO) {
+        try {
+            val json =
+                URL("https://api.openf1.org/v1/sessions?meeting_key=$meetingKey").readText()
+            val array = JSONArray(json)
+
+            (0 until array.length()).map {
+                val obj = array.getJSONObject(it)
+                obj.getInt("session_key") to obj.getString("session_name")
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+suspend fun fetchDrivers(sessionKey: Int): List<Pair<Int, String>> =
+    withContext(Dispatchers.IO) {
+        try {
+            val json =
+                URL("https://api.openf1.org/v1/drivers?session_key=$sessionKey").readText()
+            val array = JSONArray(json)
+
+            (0 until array.length()).map {
+                val obj = array.getJSONObject(it)
+                obj.getInt("driver_number") to obj.getString("full_name")
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+suspend fun fetchCarData(
+    driverNumber: Int,
+    sessionKey: Int,
+    metricField: String
+): List<Entry> =
+    withContext(Dispatchers.IO) {
+        val url =
+            "https://api.openf1.org/v1/car_data?driver_number=$driverNumber&session_key=$sessionKey"
+
+        try {
+            println("DEBUG CAR_DATA URL = $url")
+
+            val json = URL(url).readText()
+            val array = JSONArray(json)
+            println("DEBUG CAR_DATA COUNT = ${array.length()}")
+
+            val entries = mutableListOf<Entry>()
+
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val value = obj.optDouble(metricField, Double.NaN)
+                if (!value.isNaN()) {
+                    entries.add(Entry(i.toFloat(), value.toFloat()))
+                }
+            }
+
+            entries
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+
+@Composable
+fun TelemetryChart(data: List<Entry>, label: String) {
+    AndroidView(
+        factory = { context ->
+            LineChart(context).apply {
+                description.isEnabled = false
+            }
+        },
+        update = { chart ->
+            val dataSet = LineDataSet(data, label)
+            dataSet.color = android.graphics.Color.RED
+            dataSet.setDrawCircles(false)
+            dataSet.lineWidth = 2f
+
+            chart.data = LineData(dataSet)
+            chart.invalidate()
+        },
         modifier = Modifier
             .fillMaxWidth()
-            .height(420.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "$fullLabel vs Time",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        AndroidView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(360.dp),
-            factory = { context ->
-                val chart = LineChart(context)
-
-                val entries = laps.map { Entry(it.first.toFloat(), it.second.toFloat()) }
-                val dataSet = LineDataSet(entries, fullLabel).apply {
-                    color = android.graphics.Color.RED
-                    lineWidth = 2f
-                    setCircleColor(android.graphics.Color.BLACK)
-                    circleRadius = 3f
-                    valueTextSize = 9f
-                }
-
-                chart.data = LineData(dataSet)
-                chart.description.isEnabled = false
-                chart.setTouchEnabled(true)
-                chart.setPinchZoom(true)
-                chart.axisRight.isEnabled = false
-
-                chart.xAxis.apply {
-                    position = XAxis.XAxisPosition.BOTTOM
-                    setDrawGridLines(false)
-                    textSize = 12f
-                    granularity = 1f
-                }
-
-                chart.axisLeft.apply {
-                    textSize = 12f
-                    axisMinimum = 0f
-                    when (metricLabel.lowercase()) {
-                        "speed" -> axisMaximum = 400f
-                        "rpm" -> axisMaximum = 13000f
-                        "throttle", "brake" -> axisMaximum = 100f
-                        "gear" -> axisMaximum = 9f
-                        else -> axisMaximum = laps.maxOfOrNull { it.second }?.toFloat() ?: 100f
-                    }
-                    setDrawGridLines(true)
-                }
-
-                chart.legend.isEnabled = true
-                chart.invalidate()
-                chart
-            }
-        )
-        Text("Lap Number", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
-    }
+            .height(300.dp)
+    )
 }
