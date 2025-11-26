@@ -108,9 +108,11 @@ class HomeScreenActivity : ComponentActivity() {
             Spacer(Modifier.height(16.dp))
 
             FeatureCard(
-                title = "Race Sessions",
+                title = "Race Results",
                 description = "Browse races, practice, quali, and race data"
             ) {
+                startActivity(Intent(this@HomeScreenActivity, ResultsActivity::class.java))
+
             }
 
             Spacer(Modifier.height(16.dp))

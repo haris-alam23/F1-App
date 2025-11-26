@@ -194,7 +194,7 @@ fun DriverComparisonScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        LabeledDropdown(
+        DropdownBox(
             label = "Season",
             options = seasons,
             selected = selectedSeason,
@@ -204,7 +204,7 @@ fun DriverComparisonScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LabeledDropdown(
+        DropdownBox(
             label = "Race Weekend",
             options = meetings.map { it.displayName },
             selected = selectedMeeting?.displayName,
@@ -216,7 +216,7 @@ fun DriverComparisonScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LabeledDropdown(
+        DropdownBox(
             label = "Session (FP1, Quali, Race...)",
             options = sessions.map { it.displayName },
             selected = selectedSession?.displayName,
@@ -229,7 +229,7 @@ fun DriverComparisonScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         if (drivers.isNotEmpty()) {
-            LabeledDropdown(
+            DropdownBox(
                 label = "Driver A",
                 options = drivers.map { it.name },
                 selected = selectedDriverAName,
@@ -239,7 +239,7 @@ fun DriverComparisonScreen() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LabeledDropdown(
+            DropdownBox(
                 label = "Driver B",
                 options = drivers.map { it.name },
                 selected = selectedDriverBName,
@@ -336,7 +336,7 @@ fun DriverComparisonScreen() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LabeledDropdown(
+fun DropdownBox(
     label: String,
     options: List<String>,
     selected: String?,
