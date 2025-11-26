@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">"Aplicación de telemetría F1 "</string>
+    <string name="login_title">Acceso</string>
+    <string name="signup_title">Inscribirse</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="confirm_password">confirmar Contraseña</string>
+    <string name="login_button">Acceso</string>
+    <string name="signup_button">Crear una cuenta</string>
+    <string name="go_to_signup">¿No tienes una cuenta? Regístrate</string>
+    <string name="go_to_login">¿Ya tienes una cuenta? Iniciar sesión</string>
+    <string name="remember_me">Acuérdate de mí</string>
+    <string name="telemetry_title">Telemetria</string>
+    <string name="driver_comparison_title">Comparación de conductores</string>
+    <string name="race_results_title">Resultados de la carrera</string>
+    <string name="loading">Cargando...</string>
+    <string name="error">algo salió mal</string>
+    <string name="retry">Rever</string>
+</resources>

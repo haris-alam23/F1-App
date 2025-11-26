@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ class SignUpActivity : ComponentActivity() {
 
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var confirmPassword = remember { mutableStateOf("") }
         var firstName by remember { mutableStateOf("") }
         var lastName by remember { mutableStateOf("") }
         var error by remember { mutableStateOf<String?>(null) }
@@ -70,7 +72,7 @@ class SignUpActivity : ComponentActivity() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Create Account", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.signup_button), style = MaterialTheme.typography.headlineMedium)
 
             Spacer(Modifier.height(16.dp))
 
@@ -90,24 +92,39 @@ class SignUpActivity : ComponentActivity() {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation()
             )
+
+            OutlinedTextField(
+                value = confirmPassword.value,
+                onValueChange = { confirmPassword.value = it },
+                label = { Text(stringResource(R.string.confirm_password)) },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+
 
             Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = {
+                    if (password != confirmPassword.value) {
+                        error = "Passwords do not match."
+                        return@Button
+                    }
+
                     isLoading = true
-                    error = null
+                    error = ""
 
                     firebaseAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
@@ -135,7 +152,7 @@ class SignUpActivity : ComponentActivity() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (!isLoading) Text("Sign Up")
+                if (!isLoading) Text(stringResource(R.string.signup_button))
                 else CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(18.dp)
@@ -150,7 +167,7 @@ class SignUpActivity : ComponentActivity() {
                 startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
                 finish()
             }) {
-                Text("Already have an account? Log in")
+                Text(stringResource(R.string.go_to_login))
             }
         }
     }

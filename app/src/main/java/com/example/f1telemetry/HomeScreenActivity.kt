@@ -50,8 +50,6 @@ class HomeScreenActivity : ComponentActivity() {
             }
         }
     }
-
-
     @Composable
     fun HomeScreen() {
 
@@ -98,7 +96,7 @@ class HomeScreenActivity : ComponentActivity() {
             Spacer(Modifier.height(16.dp))
 
             FeatureCard(
-                title = "Driver Comparison",
+                title = "Driver ",
                 description = "Compare two drivers side-by-side"
             ) {
                 startActivity(Intent(this@HomeScreenActivity, DriverComparisonActivity::class.java))
@@ -112,15 +110,6 @@ class HomeScreenActivity : ComponentActivity() {
                 description = "Browse races, practice, quali, and race data"
             ) {
                 startActivity(Intent(this@HomeScreenActivity, ResultsActivity::class.java))
-
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            FeatureCard(
-                title = "Settings",
-                description = "Manage your account and preferences"
-            ) {
 
             }
 

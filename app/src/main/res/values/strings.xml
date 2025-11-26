@@ -1,9 +1,26 @@
 <resources>
-    <string name="app_name">F1Telemetry</string>
-    <string name="title_activity_telemetry">TelemetryActivity</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="title_activity_sign_up">SignUpActivity</string>
-    <string name="title_activity_home_screen">HomeScreenActivity</string>
-    <string name="title_activity_driver_comparison">DriverComparisonActivity</string>
-    <string name="title_activity_results">ResultsActivity</string>
+    <string name="app_name">F1 Telemetry App</string>
+    <string name="title_activity_telemetry" translatable="false">TelemetryActivity</string>
+    <string name="title_activity_login" translatable="false">LoginActivity</string>
+    <string name="title_activity_sign_up" translatable="false">SignUpActivity</string>
+    <string name="title_activity_home_screen" translatable="false">HomeScreenActivity</string>
+    <string name="title_activity_driver_comparison" translatable="false">DriverComparisonActivity</string>
+    <string name="title_activity_results" translatable="false">ResultsActivity</string>
+    <string name="login_title">Login</string>
+    <string name="signup_title">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="login_button">Log In</string>
+    <string name="signup_button">Create Account</string>
+    <string name="go_to_signup">Don\'t have an account? Sign Up</string>
+    <string name="go_to_login">Already have an account? Log In</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="telemetry_title">Telemetry</string>
+    <string name="driver_comparison_title">Driver Comparison</string>
+    <string name="race_results_title">Race Results</string>
+    <string name="loading">Loading...</string>
+    <string name="error">Something went wrong</string>
+    <string name="retry">Retry</string>
+
 </resources>
