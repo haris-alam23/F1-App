@@ -1,16 +1,21 @@
 package com.example.f1telemetry
 
+import android.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,7 +31,6 @@ import java.util.Locale
 class DriverComparisonActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             F1TelemetryTheme {
                     DriverComparisonScreen()
@@ -182,14 +186,27 @@ fun DriverComparisonScreen() {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF171717),
+                        Color(0xFF1d1d1d),
+                        Color(0xFF242424)
+
+                    )
+                )
+            )
+            .statusBarsPadding()
             .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Driver Comparison",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -329,7 +346,8 @@ fun DriverComparisonScreen() {
             Text(
                 text = "Pick a season, race weekend, session and two drivers to compare.",
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 12.dp)
+                modifier = Modifier.padding(top = 12.dp),
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -388,40 +406,54 @@ fun DriverStatsCard(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                AsyncImage(
-                    model = driver.headshotUrl,
-                    contentDescription = driver.name,
-                    modifier = Modifier.size(80.dp)
+        Box(
+            modifier = Modifier
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF3D0000),
+                            Color(0xFF1A0000),
+                            Color(0xFF0A0A0A)
+                        )
+                    )
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(driver.name, fontWeight = FontWeight.Bold)
-                    Text("No. ${driver.driverNumber} ${driver.code?.let { "• $it" } ?: ""}")
-                    Text(driver.team ?: "Unknown Team")
+                .padding(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = driver.headshotUrl,
+                        contentDescription = driver.name,
+                        modifier = Modifier.size(80.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(driver.name, fontWeight = FontWeight.Bold)
+                        Text("No. ${driver.driverNumber} ${driver.code?.let { "• $it" } ?: ""}")
+                        Text(driver.team ?: "Unknown Team")
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                StatsRow("Laps completed", stats.lapCount.toString())
+                StatsRow("Best lap", formatSeconds(stats.bestLap))
+                StatsRow("Average lap", formatSeconds(stats.avgLap))
+                StatsRow("Best Sector 1", formatSeconds(stats.bestS1))
+                StatsRow("Best Sector 2", formatSeconds(stats.bestS2))
+                StatsRow("Best Sector 3", formatSeconds(stats.bestS3))
+                StatsRow("Best speed trap", stats.bestSpeedTrap?.let { "$it km/h" } ?: "N/A"
+                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Spacer(modifier = Modifier.height(12.dp))
-
-            StatsRow("Laps completed", stats.lapCount.toString())
-            StatsRow("Best lap", formatSeconds(stats.bestLap))
-            StatsRow("Average lap", formatSeconds(stats.avgLap))
-            StatsRow("Best Sector 1", formatSeconds(stats.bestS1))
-            StatsRow("Best Sector 2", formatSeconds(stats.bestS2))
-            StatsRow("Best Sector 3", formatSeconds(stats.bestS3))
-            StatsRow("Best speed trap",stats.bestSpeedTrap?.let { "$it km/h" } ?: "N/A"
-            )
         }
     }
 }

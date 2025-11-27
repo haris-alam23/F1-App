@@ -3,17 +3,27 @@ package com.example.f1telemetry
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.f1telemetry.ui.theme.F1TelemetryTheme
+import com.example.f1telemetry.ui.theme.F1White
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -23,11 +33,16 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.net.URL
+import androidx.core.graphics.toColorInt
 
 class TelemetryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { TelemetryScreen() }
+        setContent {
+            F1TelemetryTheme {
+                TelemetryScreen()
+            }
+        }
     }
 }
 
@@ -57,10 +72,22 @@ fun TelemetryScreen() {
 
     val scope = rememberCoroutineScope()
 
+
     Column(
         modifier = Modifier
-            .verticalScroll(rememberScrollState())
             .fillMaxSize()
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF171717),
+                        Color(0xFF1d1d1d),
+                        Color(0xFF242424)
+
+                    )
+                )
+            )
+            .verticalScroll(rememberScrollState())
+            .statusBarsPadding()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -68,7 +95,12 @@ fun TelemetryScreen() {
         Text(
             "Telemetry Dashboard",
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
 
@@ -221,11 +253,13 @@ fun TelemetryScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp),
+                shape = RoundedCornerShape(18.dp),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
                         .padding(12.dp)
                 ) {
                     Text(
@@ -247,15 +281,32 @@ fun SettingCard(content: @Composable ColumnScope.() -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            content = content
-        )
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF8d0000),
+                            Color(0xFF5A0A0A),
+                            Color(0xFF1d1d1d)
+
+                        )
+                    )
+                )
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content
+            )
+        }
     }
 }
 
@@ -555,6 +606,15 @@ fun TelemetryChart(data: List<Entry>, label: String) {
 
             chart.data = LineData(dataSet)
             chart.invalidate()
+            chart.setBackgroundColor("#1d1d1d".toColorInt())
+            chart.axisLeft.textColor = android.graphics.Color.WHITE
+            chart.axisLeft.axisLineColor = android.graphics.Color.WHITE
+            chart.xAxis.textColor = android.graphics.Color.WHITE
+            chart.xAxis.axisLineColor = android.graphics.Color.WHITE
+            chart.axisRight.isEnabled = false
+            chart.legend.textColor = android.graphics.Color.WHITE
+            chart.xAxis.setDrawGridLines(false)
+
         },
         modifier = Modifier
             .fillMaxWidth()

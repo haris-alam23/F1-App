@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">"Aplicación de telemetría F1 "</string>
+    <string name="app_name">F1 Telemetry App</string>
     <string name="login_title">Acceso</string>
     <string name="signup_title">Inscribirse</string>
     <string name="email">Correo electrónico</string>

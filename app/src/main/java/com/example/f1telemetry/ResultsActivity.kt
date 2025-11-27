@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -117,13 +120,23 @@ fun ResultsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            //.padding(16.dp)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF171717),
+                        Color(0xFF1d1d1d),
+                        Color(0xFF242424)
+
+                    )
+                )
+            )
             .fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text("Session Results", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text("Session Results", modifier = Modifier.statusBarsPadding(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -186,26 +199,41 @@ fun ResultsRow(item: SessionResultItem) {
             .padding(vertical = 6.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
+        Box(modifier = Modifier
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xFF3D0000),
+                        Color(0xFF1A0000),
+                        Color(0xFF0A0A0A)
+                    )
+                )
+            )
+            .fillMaxSize()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
 
-        AsyncImage(
-            model = item.headshotUrl,
-            contentDescription = item.name,
-            modifier = Modifier
-                .size(100.dp)
-                .padding(end =12.dp)
-        )
+                AsyncImage(
+                    model = item.headshotUrl,
+                    contentDescription = item.name,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(end = 12.dp)
+                )
 
-        Column(Modifier.padding(12.dp)) {
+                Column(Modifier.padding(12.dp)) {
 
-            Text("P${item.position}: ${item.name}", fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
+                    Text("P${item.position}: ${item.name}", fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(4.dp))
 
-            Text("Team: ${item.team ?: "N/A"}")
-            Text("Laps: ${item.laps}")
-            Text("Gap: ${item.gap?.let { "${it}s" } ?: "—"}")
-            Text("Status: ${item.status}")
+                    Text("Team: ${item.team ?: "N/A"}")
+                    Text("Laps: ${item.laps}")
+                    Text("Gap: ${item.gap?.let { "${it}s" } ?: "—"}")
+                    Text("Status: ${item.status}")
+                }
             }
         }
+    }
 }
 
 suspend fun getRaceWeekends(year: Int): List<MeetingInfo> =
