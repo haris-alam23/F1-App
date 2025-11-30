@@ -95,7 +95,7 @@ class LoginActivity : ComponentActivity() {
 
 
             Text(
-                text = "F1 Telemetry",
+                text = "F1 Insights",
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
 

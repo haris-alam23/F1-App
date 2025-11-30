@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">F1 Telemetry App</string>
+    <string name="app_name">F1 Insights</string>
     <string name="title_activity_telemetry" translatable="false">TelemetryActivity</string>
     <string name="title_activity_login" translatable="false">LoginActivity</string>
     <string name="title_activity_sign_up" translatable="false">SignUpActivity</string>
